@@ -17,10 +17,13 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import path
-from core.views import home, api_atividades # Importe a nova view aqui!
+from core.views import home, api_atividades, resolver_quadratica # Importe a nova view
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', home, name='home'),
     path('api/', api_atividades, name='api_atividades'), # Esta linha é a que está faltando
+    path('api/resolver/', resolver_quadratica, name='api_resolver'),
 ]
+
+

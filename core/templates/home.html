@@ -111,7 +111,97 @@
             </div>
         </div>
 
+
     </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<div class="card mt-4">
+    <div class="card-header bg-primary text-white">Calculadora Quadrática Pro</div>
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-3"><input type="number" id="coeffA" class="form-control" placeholder="A (ex: 1)" value="1"></div>
+            <div class="col-md-3"><input type="number" id="coeffB" class="form-control" placeholder="B (ex: -5)" value="-5"></div>
+            <div class="col-md-3"><input type="number" id="coeffC" class="form-control" placeholder="C (ex: 6)" value="6"></div>
+            <div class="col-md-3"><button onclick="calcularEGraficar()" class="btn btn-success w-100">Calcular e Plotar</button></div>
+        </div>
+        
+        <div id="resultadoMatematico" class="mt-3 p-3 bg-light d-none rounded">
+            </div>
+
+        <canvas id="graficoCurva" width="400" height="200" class="mt-3"></canvas>
+    </div>
+</div>
+<p>O Desafio Matemático: Resolver uma Função Quadrática ($ax^2 + bx + c = 0$) e encontrar o Vértice (Xv, Yv), que é o ápice da curva 
+    (ponto de máximo ou mínimo), fundamental na Física para calcular trajetórias.</p>
+<script>
+let meuGrafico = null; // Variável global para destruir o gráfico anterior
+
+async function calcularEGraficar() {
+    const a = document.getElementById('coeffA').value;
+    const b = document.getElementById('coeffB').value;
+    const c = document.getElementById('coeffC').value;
+
+    // 1. CHAMA O SEU BACK-END DIANGO (API)
+    const response = await fetch(`/api/resolver/?a=${a}&b=${b}&c=${c}`);
+    const dados = await response.json();
+
+    if (dados.erro) {
+        alert(dados.erro);
+        return;
+    }
+
+    // 2. EXIBE O RESULTADO TEÓRICO DO DJANGO
+    const divResult = document.getElementById('resultadoMatematico');
+    divResult.classList.remove('d-none');
+    divResult.innerHTML = `
+    <h5>${dados.equacao}</h5>
+    <p class="text-primary"><strong>Análise:</strong> ${dados.tipo_raiz}</p>
+    <p><strong>Δ (Delta):</strong> ${dados.delta} | 
+       <strong>Raízes:</strong> [${dados.raizes.join(', ')}]</p>
+    <p><strong>Vértice (Ápice):</strong> (${dados.vertice.xv}, ${dados.vertice.yv})</p>
+`;
+
+    // 3. GERA OS PONTOS DO GRÁFICO (Aqui o Front usa o JS)
+    const pontosX = [];
+    const pontosY = [];
+    // Gera pontos ao redor do vértice (Xv) para a curva ficar bonita
+    const xv = dados.vertice.xv;
+    for (let x = xv - 5; x <= xv + 5; x += 0.5) {
+        pontosX.push(x.toFixed(1));
+        // A função em si: y = ax² + bx + c
+        pontosY.push(a * (x ** 2) + b * x + parseFloat(c));
+    }
+
+    // 4. DESENHA O GRÁFICO (Chart.js)
+    const ctx = document.getElementById('graficoCurva').getContext('2d');
+    
+    // Destrói o gráfico anterior se existir
+    if (meuGrafico) { meuGrafico.destroy(); }
+
+    meuGrafico = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: pontosX,
+            datasets: [{
+                label: `Parábola: ${dados.equacao}`,
+                data: pontosY,
+                borderColor: a > 0 ? 'rgb(75, 192, 192)' : 'rgb(255, 99, 132)',
+                tension: 0.3,
+                fill: false,
+                pointBackgroundColor: pontosX.map(x => parseFloat(x) === xv ? 'red' : 'rgba(75, 192, 192, 0.1)'),
+                pointRadius: pontosX.map(x => parseFloat(x) === xv ? 6 : 1), // Destaca o vértice em vermelho
+            }]
+        },
+        options: {
+            scales: {
+                x: { title: { display: true, text: 'Eixo X' } },
+                y: { title: { display: true, text: 'Eixo Y' } }
+            }
+        }
+    });
+}
+</script>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
