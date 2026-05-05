@@ -1,208 +1,201 @@
 <!DOCTYPE html>
 <html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Math Project - Django & MySQL</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.min.css" rel="stylesheet">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MathLab Studio - Laboratório Digital</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <style>
-        body { background-color: #f8f9fa; }
-        .hero-section { background: #0d6efd; color: white; padding: 60px 0; }
+      body { background-color: #f0f2f5; font-family: "Inter", sans-serif; }
+      .card-modulo { transition: transform 0.2s; cursor: pointer; border: none; border-radius: 15px; }
+      .card-modulo:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1); }
+      .icon-circle { width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px; font-size: 1.5rem; }
+      [v-cloak] { display: none; }
+      .sidebar-params { background: white; border-radius: 15px; padding: 20px; height: 100%; display: flex; flex-direction: column; }
+      #canvas-container { background: white; border-radius: 15px; padding: 20px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); }
+      .nav-link { cursor: pointer; }
+      .analise-card { border-left: 5px solid #0d6efd; background: #f8f9fa; }
     </style>
-</head>
-<body>
-
-    <nav class="navbar navbar-dark bg-dark">
+  </head>
+  <body>
+    <div id="app" v-cloak>
+      <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4 shadow-sm">
         <div class="container">
-            <a class="navbar-brand" href="#">Math App</a>
+          <span class="navbar-brand fw-bold" @click="view = 'home'; filtro = 'todos'" style="cursor: pointer">
+            <span class="text-warning">∑</span> MathLab Studio
+          </span>
+          <div class="navbar-nav me-auto" v-if="view === 'home'">
+            <a class="nav-link" :class="{active: filtro === 'Geometria'}" @click="filtro = 'Geometria'">Geometria</a>
+            <a class="nav-link" :class="{active: filtro === 'Física'}" @click="filtro = 'Física'">Física</a>
+            <a class="nav-link" :class="{active: filtro === 'Matemática'}" @click="filtro = 'Matemática'">Álgebra</a>
+            <a class="nav-link text-info" v-if="filtro !== 'todos'" @click="filtro = 'todos'">[Ver Tudo]</a>
+          </div>
+          <button v-if="view !== 'home'" @click="view = 'home'" class="btn btn-outline-light btn-sm">Voltar ao Menu</button>
         </div>
-    </nav>
+      </nav>
 
-    <div class="hero-section text-center">
-        <div class="container">
-            <h1 class="display-4 fw-bold">Django + MySQL</h1>
-            <p class="lead">Sistema rodando com sucesso no GitHub Codespaces</p>
-        </div>
-    </div>
-
-    <div class="container mt-5">
-        <div class="row justify-content-center">
-            <div class="col-md-8">
-                <div class="card shadow">
-                    <div class="card-body">
-                        <h5 class="card-title text-primary">Status do Banco de Dados</h5>
-                        <div class="card shadow mb-4">
-                        <div class="card-header bg-primary text-white">
-                            <h5 class="mb-0">Nova Atividade</h5>
-                        </div>
-                        <div class="card-body">
-                            <form method="POST" class="row g-3">
-                                <div class="col-md-5">
-                                    <input type="text" name="titulo" class="form-control" placeholder="Título da Atividade" required>
-                                </div>
-                                <div class="col-md-5">
-                                    <input type="text" name="descricao" class="form-control" placeholder="Descrição curta" required>
-                                </div>
-                                <div class="col-md-2">
-                                    <button type="submit" class="btn btn-success w-100">Cadastrar</button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-
-                        <h5 class="mt-4">Atividades Cadastradas no MySQL</h5>
-                        <table class="table table-hover mt-3">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Título</th>
-                                    <th>Descrição</th>
-                                    <th>Data</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for atividade in atividades %}
-                                <tr>
-                                    <td>{{ atividade.titulo }}</td>
-                                    <td>{{ atividade.descricao }}</td>
-                                    <td>{{ atividade.criado_em|date:"d/m/Y H:i" }}</td>
-                                </tr>
-                                {% empty %}
-                                <tr>
-                                    <td colspan="3" class="text-center text-muted">Nenhuma atividade encontrada no banco.</td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                        <p class="card-text">Conexão com <strong>math_db</strong> estabelecida.</p>
-                        <hr>
-                        <div class="alert alert-success">
-                            O Bootstrap foi carregado via CDN com sucesso!
-                        </div>
-                        <ul class="list-group mb-4">
-    {% for a in atividades %}
-    <li class="list-group-item d-flex justify-content-between">
-        <strong>{{ a.titulo }}</strong>
-        <span class="badge bg-info text-dark">ID: {{ a.id }}</span>
-    </li>
-    {% endfor %}
-</ul>
-
-<hr>
-
-<div class="text-center">
-    <button onclick="testarAPI()" class="btn btn-outline-dark">
-        Testar Conexão API (Consumo via JS)
-    </button>
-</div>
-
-<script>
-    // Esta é a função que eles verão no 2º bimestre de Front-end
-    // Mas você já está mostrando como o SEU Back-end entrega o dado para ela
-    async function testarAPI() {
-        const response = await fetch('/api/'); // Chama sua view de API
-        const dados = await response.json();   // Transforma em objeto JS
-        
-        console.table(dados); // Mostra os dados do MySQL de forma linda no console
-        alert("O Front-End acabou de ler " + dados.length + " atividades do MySQL!");
-    }
-</script>
-                    </div>
-                </div>
+      <div class="container pb-5">
+        <div v-if="view === 'home'" class="row g-4 justify-content-center">
+          <div class="col-12 text-center mb-3">
+            <h2 class="fw-bold">[[ filtro === 'todos' ? 'O que vamos explorar hoje?' : 'Explorando ' + filtro ]]</h2>
+            <p class="text-muted">Selecione um módulo para iniciar a simulação</p>
+          </div>
+          <div v-for="(info, tipo) in modulosFiltrados" :key="tipo" class="col-md-3">
+            <div class="card card-modulo h-100 text-center p-4 shadow-sm" @click="selecionarModulo(tipo)">
+              <div :class="['icon-circle', info.color, 'text-white']">[[ info.icon ]]</div>
+              <h5 class="fw-bold">[[ info.titulo ]]</h5>
+              <small class="text-muted">[[ info.desc ]]</small>
             </div>
+          </div>
         </div>
 
+        <div v-else class="row g-4">
+          <div class="col-lg-4">
+            <div class="sidebar-params shadow-sm">
+              <h5 class="fw-bold mb-1">[[ modulos[view].titulo ]]</h5>
+              <p class="small text-muted mb-4">[[ modulos[view].area ]] - Ajuste os parâmetros:</p>
 
+              <div v-for="(val, coef) in sliders" :key="coef" class="mb-4">
+                <label class="form-label d-flex justify-content-between">
+                  <span>Coeficiente <b>[[ coef ]]</b></span>
+                  <span class="badge bg-light text-primary">[[ val ]]</span>
+                </label>
+                <input type="range" :min="coef === 'a' && view === 'quadratica' ? -10 : -10" max="10" step="0.1" v-model.number="sliders[coef]" @input="atualizarGrafico" class="form-range" />
+              </div>
+
+              <div class="alert alert-primary py-2 small text-center fw-bold">
+                [[ formatarEquacao() ]]
+              </div>
+
+              <div v-if="view === 'quadratica' || view === 'linear'" class="analise-card p-3 rounded mt-3">
+                <h6 class="fw-bold text-dark border-bottom pb-2">Análise Estrutural</h6>
+                <div v-if="view === 'quadratica'">
+                  <p class="small mb-1"><b>Δ:</b> [[ analise.delta ]]</p>
+                  <p class="small mb-1 text-primary"><b>Raízes:</b> [[ analise.raizes ]]</p>
+                  <p class="small mb-0"><b>Vértice:</b> ([[ analise.xv ]], [[ analise.yv ]])</p>
+                </div>
+                <div v-if="view === 'linear'">
+                  <p class="small mb-1"><b>Raiz (Zero):</b> [[ (-sliders.b / sliders.a).toFixed(2) ]]</p>
+                  <p class="small mb-0 text-muted">A função é [[ sliders.a > 0 ? 'Crescente' : 'Decrescente' ]]</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-lg-8">
+            <div id="canvas-container">
+              <div style="height: 500px"><canvas id="mainChart"></canvas></div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+      const { createApp, markRaw } = Vue;
 
-<div class="card mt-4">
-    <div class="card-header bg-primary text-white">Calculadora Quadrática Pro</div>
-    <div class="card-body">
-        <div class="row g-3">
-            <div class="col-md-3"><input type="number" id="coeffA" class="form-control" placeholder="A (ex: 1)" value="1"></div>
-            <div class="col-md-3"><input type="number" id="coeffB" class="form-control" placeholder="B (ex: -5)" value="-5"></div>
-            <div class="col-md-3"><input type="number" id="coeffC" class="form-control" placeholder="C (ex: 6)" value="6"></div>
-            <div class="col-md-3"><button onclick="calcularEGraficar()" class="btn btn-success w-100">Calcular e Plotar</button></div>
-        </div>
-        
-        <div id="resultadoMatematico" class="mt-3 p-3 bg-light d-none rounded">
-            </div>
-
-        <canvas id="graficoCurva" width="400" height="200" class="mt-3"></canvas>
-    </div>
-</div>
-<p>O Desafio Matemático: Resolver uma Função Quadrática ($ax^2 + bx + c = 0$) e encontrar o Vértice (Xv, Yv), que é o ápice da curva 
-    (ponto de máximo ou mínimo), fundamental na Física para calcular trajetórias.</p>
-<script>
-let meuGrafico = null; // Variável global para destruir o gráfico anterior
-
-async function calcularEGraficar() {
-    const a = document.getElementById('coeffA').value;
-    const b = document.getElementById('coeffB').value;
-    const c = document.getElementById('coeffC').value;
-
-    // 1. CHAMA O SEU BACK-END DIANGO (API)
-    const response = await fetch(`/api/resolver/?a=${a}&b=${b}&c=${c}`);
-    const dados = await response.json();
-
-    if (dados.erro) {
-        alert(dados.erro);
-        return;
-    }
-
-    // 2. EXIBE O RESULTADO TEÓRICO DO DJANGO
-    const divResult = document.getElementById('resultadoMatematico');
-    divResult.classList.remove('d-none');
-    divResult.innerHTML = `
-    <h5>${dados.equacao}</h5>
-    <p class="text-primary"><strong>Análise:</strong> ${dados.tipo_raiz}</p>
-    <p><strong>Δ (Delta):</strong> ${dados.delta} | 
-       <strong>Raízes:</strong> [${dados.raizes.join(', ')}]</p>
-    <p><strong>Vértice (Ápice):</strong> (${dados.vertice.xv}, ${dados.vertice.yv})</p>
-`;
-
-    // 3. GERA OS PONTOS DO GRÁFICO (Aqui o Front usa o JS)
-    const pontosX = [];
-    const pontosY = [];
-    // Gera pontos ao redor do vértice (Xv) para a curva ficar bonita
-    const xv = dados.vertice.xv;
-    for (let x = xv - 5; x <= xv + 5; x += 0.5) {
-        pontosX.push(x.toFixed(1));
-        // A função em si: y = ax² + bx + c
-        pontosY.push(a * (x ** 2) + b * x + parseFloat(c));
-    }
-
-    // 4. DESENHA O GRÁFICO (Chart.js)
-    const ctx = document.getElementById('graficoCurva').getContext('2d');
-    
-    // Destrói o gráfico anterior se existir
-    if (meuGrafico) { meuGrafico.destroy(); }
-
-    meuGrafico = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: pontosX,
-            datasets: [{
-                label: `Parábola: ${dados.equacao}`,
-                data: pontosY,
-                borderColor: a > 0 ? 'rgb(75, 192, 192)' : 'rgb(255, 99, 132)',
-                tension: 0.3,
-                fill: false,
-                pointBackgroundColor: pontosX.map(x => parseFloat(x) === xv ? 'red' : 'rgba(75, 192, 192, 0.1)'),
-                pointRadius: pontosX.map(x => parseFloat(x) === xv ? 6 : 1), // Destaca o vértice em vermelho
-            }]
+      createApp({
+        delimiters: ["[[", "]]"],
+        data() {
+          return {
+            view: "home",
+            filtro: "todos",
+            chart: null,
+            sliders: { a: 1, b: 0, c: 0 },
+            analise: { delta: 0, raizes: '', xv: 0, yv: 0 },
+            modulos: {
+              linear: { area: 'Matemática', titulo: 'Função Linear', desc: 'f(x) = ax + b', icon: '斜', color: 'bg-primary' },
+              quadratica: { area: 'Matemática', titulo: 'Função Quadrática', desc: 'f(x) = ax² + bx + c', icon: '∪', color: 'bg-success' },
+              pitagoras: { area: 'Geometria', titulo: 'Pitágoras', desc: 'a² = b² + c²', icon: '⊿', color: 'bg-warning text-dark' },
+              circulo: { area: 'Geometria', titulo: 'Círculo Unitário', desc: 'Seno e Cosseno', icon: '◯', color: 'bg-info' },
+              mruv: { area: 'Física', titulo: 'Movimento (MRUV)', desc: 'S = S0 + vt + at²/2', icon: '🚀', color: 'bg-danger' },
+              optica: { area: 'Física', titulo: 'Lentes e Raios', desc: 'Refração e Foco', icon: '🔍', color: 'bg-dark' }
+            },
+          };
         },
-        options: {
-            scales: {
-                x: { title: { display: true, text: 'Eixo X' } },
-                y: { title: { display: true, text: 'Eixo Y' } }
+        computed: {
+          modulosFiltrados() {
+            if (this.filtro === "todos") return this.modulos;
+            const res = {};
+            for (let k in this.modulos) {
+              if (this.modulos[k].area === this.filtro) res[k] = this.modulos[k];
             }
-        }
-    });
-}
-</script>
+            return res;
+          }
+        },
+        methods: {
+          selecionarModulo(tipo) {
+            this.view = tipo;
+            if (tipo === "mruv") this.sliders = { a: 2, v0: 5, s0: 0 }; 
+            else if (tipo === "pitagoras") this.sliders = { b: 3, c: 4 };
+            else if (tipo === "linear") this.sliders = { a: 1, b: 2 };
+            else this.sliders = { a: 1, b: -2, c: -3 };
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</body>
+            this.$nextTick(() => this.iniciarGrafico());
+          },
+          iniciarGrafico() {
+            const ctx = document.getElementById("mainChart").getContext("2d");
+            if (this.chart) this.chart.destroy();
+            this.chart = markRaw(new Chart(ctx, {
+              type: "line",
+              data: { datasets: [{ label: "Simulação", data: [], borderColor: "#0d6efd", borderWidth: 3, pointRadius: 0, fill: false, tension: 0.3 }] },
+              options: { 
+                responsive: true, 
+                maintainAspectRatio: false,
+                animation: false,
+                scales: { 
+                    x: { type: "linear", position: "center", min: -10, max: 10 }, 
+                    y: { type: "linear", position: "center", min: -20, max: 20 } 
+                } 
+              }
+            }));
+            this.atualizarGrafico();
+          },
+          atualizarGrafico() {
+            const pontos = [];
+            const { a, b, c, v0, s0 } = this.sliders;
+            
+            // Lógica Matemática de Apoio
+            if (this.view === 'quadratica') {
+                const d = (b * b) - (4 * a * c);
+                this.analise.delta = d.toFixed(2);
+                this.analise.xv = (-b / (2 * a)).toFixed(2);
+                this.analise.yv = (-d / (4 * a)).toFixed(2);
+                if (d < 0) this.analise.raizes = "Sem raízes reais";
+                else if (d === 0) this.analise.raizes = "Uma raiz real";
+                else this.analise.raizes = "Duas raízes reais";
+            }
+
+            // Gerar pontos do gráfico
+            for (let x = -10; x <= 10; x += 0.2) {
+              let y = 0;
+              if (this.view === "linear") y = a * x + b;
+              else if (this.view === "quadratica") y = a * x * x + b * x + c;
+              else if (this.view === "mruv") y = s0 + v0 * x + (a * x * x) / 2;
+              else if (this.view === "circulo") y = Math.sin(x * a);
+              else if (this.view === "pitagoras") y = Math.sqrt(Math.abs(b*b + c*c));
+              
+              if (y < 30 && y > -30) pontos.push({ x, y });
+            }
+            
+            this.chart.data.datasets[0].data = pontos;
+            this.chart.data.datasets[0].borderColor = (a < 0 && this.view === 'quadratica') ? '#dc3545' : '#0d6efd';
+            this.chart.update('none');
+          },
+          formatarEquacao() {
+            const { a, b, c, v0, s0 } = this.sliders;
+            const fmt = (n) => n >= 0 ? `+ ${n}` : `- ${Math.abs(n)}`;
+            
+            if (this.view === 'linear') return `f(x) = ${a}x ${fmt(b)}`;
+            if (this.view === 'quadratica') return `f(x) = ${a}x² ${fmt(b)}x ${fmt(c)}`;
+            if (this.view === 'mruv') return `S = ${s0} ${fmt(v0)}t ${fmt(a/2)}t²`;
+            if (this.view === 'pitagoras') return `Hipotenusa = ${Math.sqrt(b*b + c*c).toFixed(2)}`;
+            return "Análise Dinâmica Ativa";
+          }
+        }
+      }).mount("#app");
+    </script>
+  </body>
 </html>

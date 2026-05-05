@@ -10,7 +10,22 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
+import os
 from pathlib import Path
+import pymysql
+
+# 1. Faz o PyMySQL fingir que é o MySQLdb
+pymysql.install_as_MySQLdb()
+
+
+# 2. Força a versão para uma que o Django 6.0 aceite
+# Criamos um objeto que responde "sim" para a versão 2.2.8
+class VersionProxy:
+    def __getattr__(self, name):
+        return (2, 2, 8, "final", 0)
+
+
+pymysql.version_info = (2, 2, 8, "final", 0)
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -25,7 +40,7 @@ SECRET_KEY = "django-insecure-j87m73q77d7_3^6)y1^0v%^mq3no2g*knbk8s6e8mj#f3h7)n2
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ["*"]
 
 
 # Application definition
@@ -44,7 +59,7 @@ MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
-   # "django.middleware.csrf.CsrfViewMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
@@ -75,12 +90,12 @@ WSGI_APPLICATION = "setup.wsgi.application"
 
 DATABASES = {
     "default": {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'math_db',
-        'USER': 'root',
-        'PASSWORD': '',
-        'HOST': '127.0.0.1',
-        'PORT': '3306',
+        "ENGINE": "django.db.backends.mysql",
+        "NAME": "math_db",
+        "USER": "professor",
+        "PASSWORD": "Luc1An475!@#$Z",
+        "HOST": "127.0.0.1",
+        "PORT": "3306",
     }
 }
 
@@ -107,9 +122,9 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/6.0/topics/i18n/
 
-LANGUAGE_CODE = "en-us"
+LANGUAGE_CODE = "pt-br"
 
-TIME_ZONE = "UTC"
+TIME_ZONE = "America/Sao_Paulo"
 
 USE_I18N = True
 
@@ -121,9 +136,15 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, "static"),
+]
+
 CSRF_TRUSTED_ORIGINS = [
-    'https://*.github.dev',
-    'https://*.preview.app.github.dev'
+    "https://*.github.dev",
+    "https://*.preview.app.github.dev",
+    "http://localhost:8000",
+    "http://127.0.0.1:8000",
 ]
 
 CSRF_COOKIE_SECURE = True
